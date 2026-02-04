@@ -1,0 +1,1179 @@
+"""HTML, CSS, and JS templates for the program."""
+
+import json
+
+
+def get_html_template(title: str, subtitle: str) -> str:
+    """Return the HTML template."""
+    return f'''<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title} - {subtitle}</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="header__title">{title}</h1>
+            <p class="header__subtitle">{subtitle}</p>
+        </div>
+    </header>
+
+    <nav class="day-nav">
+        <div class="container">
+            <div class="day-tabs" role="tablist">
+            </div>
+        </div>
+    </nav>
+
+    <main class="main">
+        <div class="container">
+            <div class="room-legend">
+                <span class="legend-title">Salles:</span>
+                <div class="legend-items">
+                </div>
+            </div>
+            <div class="schedule" id="schedule">
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="modal" aria-hidden="true">
+        <div class="modal__backdrop"></div>
+        <div class="modal__content">
+            <button class="modal__close" aria-label="Fermer">&times;</button>
+            <div class="modal__body">
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 - {subtitle}</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
+'''
+
+
+def get_css() -> str:
+    """Return the CSS stylesheet."""
+    return '''/* ===== CSS Variables ===== */
+:root {
+    --color-primary: #2563eb;
+    --color-primary-dark: #1d4ed8;
+    --color-primary-light: #dbeafe;
+
+    --color-discours: #7c3aed;
+    --color-discours-light: #ede9fe;
+    --color-session: #0891b2;
+    --color-session-light: #cffafe;
+    --color-comm: #059669;
+    --color-comm-light: #d1fae5;
+    --color-pause: #f59e0b;
+    --color-pause-light: #fef3c7;
+    --color-logistique: #6b7280;
+    --color-logistique-light: #f3f4f6;
+
+    --color-room-brea: #ec4899;
+    --color-room-cezanne: #8b5cf6;
+    --color-room-chagall: #06b6d4;
+
+    --color-bg: #f8fafc;
+    --color-surface: #ffffff;
+    --color-text: #1e293b;
+    --color-text-muted: #64748b;
+    --color-border: #e2e8f0;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+}
+
+/* ===== Reset & Base ===== */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+}
+
+/* ===== Header ===== */
+.header {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: white;
+    padding: var(--spacing-xl) 0;
+    text-align: center;
+}
+
+.header__title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+}
+
+.header__subtitle {
+    font-size: 1rem;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+/* ===== Day Navigation ===== */
+.day-nav {
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+}
+
+.day-tabs {
+    display: flex;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.day-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.day-tab {
+    flex: 1;
+    min-width: fit-content;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.day-tab:hover {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.day-tab.active {
+    background: var(--color-primary);
+    color: white;
+}
+
+.day-tab__date {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 400;
+    opacity: 0.8;
+    margin-top: 2px;
+}
+
+/* ===== Room Legend ===== */
+.room-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) 0;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--spacing-md);
+}
+
+.legend-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.legend-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.legend-dot--brea { background-color: var(--color-room-brea); }
+.legend-dot--cezanne { background-color: var(--color-room-cezanne); }
+.legend-dot--chagall { background-color: var(--color-room-chagall); }
+
+/* ===== Main Content ===== */
+.main {
+    flex: 1;
+    padding: var(--spacing-md) 0 var(--spacing-2xl);
+}
+
+.schedule {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+/* ===== Time Block ===== */
+.time-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.time-block__header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) 0;
+}
+
+.time-block__time {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    min-width: 100px;
+}
+
+.time-block__line {
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+}
+
+.time-block__events {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+/* ===== Event Card ===== */
+.event-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--color-border);
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.event-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.event-card--discours { border-left-color: var(--color-discours); }
+.event-card--session { border-left-color: var(--color-session); }
+.event-card--comm { border-left-color: var(--color-comm); }
+.event-card--pause { border-left-color: var(--color-pause); }
+.event-card--logistique { border-left-color: var(--color-logistique); }
+
+.event-card__inner {
+    padding: var(--spacing-md);
+}
+
+.event-card__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.event-card__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.event-card__badge--discours {
+    background: var(--color-discours-light);
+    color: var(--color-discours);
+}
+
+.event-card__badge--session {
+    background: var(--color-session-light);
+    color: var(--color-session);
+}
+
+.event-card__badge--comm {
+    background: var(--color-comm-light);
+    color: var(--color-comm);
+}
+
+.event-card__badge--pause {
+    background: var(--color-pause-light);
+    color: var(--color-pause);
+}
+
+.event-card__badge--logistique {
+    background: var(--color-logistique-light);
+    color: var(--color-logistique);
+}
+
+.event-card__room {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.event-card__room::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.event-card__room--brea::before { background-color: var(--color-room-brea); }
+.event-card__room--cezanne::before { background-color: var(--color-room-cezanne); }
+.event-card__room--chagall::before { background-color: var(--color-room-chagall); }
+
+.event-card__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    line-height: 1.4;
+    margin-bottom: var(--spacing-xs);
+}
+
+.event-card__time {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-sm);
+}
+
+.event-card__speaker {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+.event-card__description {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-sm);
+    white-space: pre-line;
+}
+
+/* Clickable cards */
+.event-card--clickable {
+    cursor: pointer;
+}
+
+.event-card--clickable .event-card__title::after {
+    content: ' \\2192';
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.event-card--clickable:hover .event-card__title::after {
+    opacity: 0.5;
+}
+
+/* ===== Parallel Sessions Grid ===== */
+.parallel-sessions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+}
+
+/* ===== Parallel Events (pause + poster) ===== */
+.parallel-events {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+}
+
+/* ===== Overview Mode ===== */
+.overview-day {
+    margin-bottom: var(--spacing-2xl);
+    padding-bottom: var(--spacing-xl);
+    border-bottom: 2px solid var(--color-border);
+}
+
+.overview-day:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.overview-day__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--color-primary);
+    display: inline-block;
+}
+
+.overview-day__schedule {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.time-block--compact .event-card {
+    box-shadow: none;
+}
+
+.time-block--compact .event-card__inner {
+    padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.time-block--compact .event-card__title {
+    font-size: 0.875rem;
+}
+
+/* ===== Session Details (Nested talks) ===== */
+.session-talks {
+    background: var(--color-bg);
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--color-border);
+}
+
+.talk-item {
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.talk-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.talk-item__time {
+    font-size: 0.75rem;
+    color: var(--color-comm);
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.talk-item__title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+    margin-bottom: 2px;
+    cursor: pointer;
+}
+
+.talk-item__title:hover {
+    color: var(--color-primary);
+}
+
+.talk-item__speaker {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+/* ===== Modal ===== */
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal[aria-hidden="false"] {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal__content {
+    position: relative;
+    background: var(--color-surface);
+    width: 100%;
+    max-height: 90vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    overflow: hidden;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+.modal[aria-hidden="false"] .modal__content {
+    transform: translateY(0);
+}
+
+.modal__close {
+    position: absolute;
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: var(--color-bg);
+    border-radius: 50%;
+    font-size: 1.25rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 1;
+}
+
+.modal__close:hover {
+    background: var(--color-border);
+    color: var(--color-text);
+}
+
+.modal__body {
+    padding: var(--spacing-xl);
+    padding-top: var(--spacing-2xl);
+    overflow-y: auto;
+    max-height: 90vh;
+}
+
+.modal__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-md);
+}
+
+.modal__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.4;
+}
+
+.modal__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.modal__meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+.modal__meta-icon {
+    font-size: 1rem;
+}
+
+.modal__section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.modal__section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-sm);
+}
+
+.modal__speaker {
+    font-size: 1rem;
+    color: var(--color-text);
+}
+
+.modal__description {
+    font-size: 0.9375rem;
+    color: var(--color-text);
+    line-height: 1.7;
+    white-space: pre-line;
+}
+
+/* ===== Footer ===== */
+.footer {
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-lg) 0;
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+/* ===== Responsive Design ===== */
+
+/* Tablet and up */
+@media (min-width: 640px) {
+    .header {
+        padding: var(--spacing-2xl) 0;
+    }
+
+    .header__title {
+        font-size: 2.25rem;
+    }
+
+    .header__subtitle {
+        font-size: 1.125rem;
+    }
+
+    .day-tab {
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: 1rem;
+    }
+
+    .parallel-sessions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal__content {
+        max-width: 600px;
+        margin: auto;
+        border-radius: var(--radius-xl);
+        max-height: 85vh;
+    }
+
+    .modal {
+        align-items: center;
+        padding: var(--spacing-xl);
+    }
+
+    .modal__content {
+        transform: translateY(20px) scale(0.95);
+    }
+
+    .modal[aria-hidden="false"] .modal__content {
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+    .container {
+        padding: 0 var(--spacing-xl);
+    }
+
+    .parallel-sessions {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .time-block {
+        flex-direction: row;
+        gap: var(--spacing-lg);
+    }
+
+    .time-block__header {
+        flex-direction: column;
+        align-items: flex-start;
+        min-width: 80px;
+        padding: var(--spacing-md) 0 0 0;
+    }
+
+    .time-block__line {
+        display: none;
+    }
+
+    .time-block__events {
+        flex: 1;
+    }
+
+    .event-card__title {
+        font-size: 1.0625rem;
+    }
+}
+
+/* Large Desktop */
+@media (min-width: 1280px) {
+    .header__title {
+        font-size: 2.5rem;
+    }
+}
+
+/* ===== Print Styles ===== */
+@media print {
+    .header {
+        background: none;
+        color: var(--color-text);
+        border-bottom: 2px solid var(--color-text);
+    }
+
+    .day-nav {
+        position: static;
+        box-shadow: none;
+    }
+
+    .event-card {
+        box-shadow: none;
+        border: 1px solid var(--color-border);
+        break-inside: avoid;
+    }
+
+    .modal, .footer {
+        display: none;
+    }
+}
+'''
+
+
+def get_js_template(data: dict) -> str:
+    """Return the JS with embedded data."""
+    data_json = json.dumps(data, ensure_ascii=False, indent=2)
+
+    return f'''// ===== Embedded Data =====
+const DATA = {data_json};
+
+// ===== Configuration =====
+const CONFIG = {{
+    typeLabels: {{
+        discours: 'Plénier',
+        session: 'Session',
+        comm: 'Communication',
+        pause: 'Pause',
+        logistique: 'Info'
+    }},
+    dayNames: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
+    monthNames: ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre']
+}};
+
+// ===== State =====
+let state = {{
+    events: DATA.events,
+    days: DATA.days,
+    rooms: new Set(DATA.rooms),
+    currentDay: DATA.days[0],
+    isOverview: false
+}};
+
+// ===== Data Processing =====
+function getEventsForDay(date) {{
+    return state.events.filter(e => e.date === date);
+}}
+
+function groupEventsByTime(events) {{
+    const mainEvents = events.filter(e => e.type !== 'comm');
+    const groups = {{}};
+
+    mainEvents.forEach(event => {{
+        const key = event.startTime;
+        if (!groups[key]) {{
+            groups[key] = [];
+        }}
+        groups[key].push(event);
+    }});
+
+    return Object.entries(groups)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([time, events]) => ({{ time, events }}));
+}}
+
+function getTalksForSession(sessionId, date, startTime, endTime, room) {{
+    return state.events.filter(e =>
+        e.type === 'comm' &&
+        e.date === date &&
+        e.salle === room &&
+        e.start >= startTime &&
+        e.end <= endTime
+    ).sort((a, b) => a.start.localeCompare(b.start));
+}}
+
+// ===== Formatting =====
+function formatDate(dateStr) {{
+    const [year, month, day] = dateStr.split('-');
+    const date = new Date(year, month - 1, day);
+    return `${{CONFIG.dayNames[date.getDay()]}} ${{parseInt(day)}} ${{CONFIG.monthNames[date.getMonth()]}}`;
+}}
+
+function formatShortDate(dateStr) {{
+    const [, month, day] = dateStr.split('-');
+    return `${{parseInt(day)}}/${{month}}`;
+}}
+
+// ===== Rendering =====
+function renderDayTabs() {{
+    const container = document.querySelector('.day-tabs');
+
+    // Overview tab
+    let html = `
+        <button class="day-tab ${{state.isOverview ? 'active' : ''}}"
+                data-overview="true"
+                role="tab"
+                aria-selected="${{state.isOverview}}">
+            Vue d'ensemble
+        </button>
+    `;
+
+    // Day tabs
+    html += state.days.map((day, index) => `
+        <button class="day-tab ${{!state.isOverview && day === state.currentDay ? 'active' : ''}}"
+                data-day="${{day}}"
+                role="tab"
+                aria-selected="${{!state.isOverview && day === state.currentDay}}">
+            ${{formatDate(day)}}
+            <span class="day-tab__date">${{formatShortDate(day)}}</span>
+        </button>
+    `).join('');
+
+    container.innerHTML = html;
+
+    container.querySelectorAll('.day-tab').forEach(tab => {{
+        tab.addEventListener('click', () => {{
+            if (tab.dataset.overview) {{
+                state.isOverview = true;
+            }} else {{
+                state.isOverview = false;
+                state.currentDay = tab.dataset.day;
+            }}
+            renderDayTabs();
+            renderSchedule();
+        }});
+    }});
+}}
+
+function renderRoomLegend() {{
+    const container = document.querySelector('.legend-items');
+    const rooms = Array.from(state.rooms);
+
+    container.innerHTML = rooms.map(room => {{
+        const roomClass = room.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
+        return `
+            <div class="legend-item">
+                <span class="legend-dot legend-dot--${{roomClass}}"></span>
+                <span>${{room}}</span>
+            </div>
+        `;
+    }}).join('');
+}}
+
+function renderSchedule() {{
+    const container = document.getElementById('schedule');
+
+    if (state.isOverview) {{
+        renderOverview(container);
+    }} else {{
+        renderDaySchedule(container);
+    }}
+
+    // Add event listeners
+    container.querySelectorAll('.event-card--clickable').forEach(card => {{
+        card.addEventListener('click', () => {{
+            const eventData = JSON.parse(card.dataset.event);
+            openModal(eventData);
+        }});
+    }});
+
+    container.querySelectorAll('.talk-item__title').forEach(title => {{
+        title.addEventListener('click', (e) => {{
+            e.stopPropagation();
+            const eventData = JSON.parse(title.dataset.event);
+            openModal(eventData);
+        }});
+    }});
+}}
+
+function renderDaySchedule(container) {{
+    const dayEvents = getEventsForDay(state.currentDay);
+    const timeGroups = groupEventsByTime(dayEvents);
+
+    if (timeGroups.length === 0) {{
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state__icon">📅</div>
+                <p>Aucun événement pour cette journée</p>
+            </div>
+        `;
+        return;
+    }}
+
+    container.innerHTML = timeGroups.map(group => `
+        <div class="time-block">
+            <div class="time-block__header">
+                <span class="time-block__time">${{group.time}}</span>
+                <div class="time-block__line"></div>
+            </div>
+            <div class="time-block__events">
+                ${{renderTimeGroupEvents(group.events, false)}}
+            </div>
+        </div>
+    `).join('');
+}}
+
+function renderOverview(container) {{
+    let html = '';
+
+    state.days.forEach(day => {{
+        const dayEvents = getEventsForDay(day);
+        const timeGroups = groupEventsByTime(dayEvents);
+
+        html += `
+            <div class="overview-day">
+                <h2 class="overview-day__title">${{formatDate(day)}}</h2>
+                <div class="overview-day__schedule">
+                    ${{timeGroups.map(group => `
+                        <div class="time-block time-block--compact">
+                            <div class="time-block__header">
+                                <span class="time-block__time">${{group.time}}</span>
+                                <div class="time-block__line"></div>
+                            </div>
+                            <div class="time-block__events">
+                                ${{renderTimeGroupEvents(group.events, true)}}
+                            </div>
+                        </div>
+                    `).join('')}}
+                </div>
+            </div>
+        `;
+    }});
+
+    container.innerHTML = html;
+}}
+
+function renderTimeGroupEvents(events, isOverview = false) {{
+    const parallelSessions = events.filter(e => e.type === 'session');
+    const pauseLogistique = events.filter(e => e.type === 'pause' || e.type === 'logistique');
+    const otherEvents = events.filter(e => e.type !== 'session' && e.type !== 'pause' && e.type !== 'logistique');
+
+    let html = '';
+
+    // Render discours and other single events
+    otherEvents.forEach(event => {{
+        html += renderEventCard(event, false, isOverview);
+    }});
+
+    // Render pause/logistique events side by side if multiple
+    if (pauseLogistique.length > 1) {{
+        html += `<div class="parallel-events">`;
+        pauseLogistique.forEach(event => {{
+            html += renderEventCard(event, false, isOverview);
+        }});
+        html += `</div>`;
+    }} else if (pauseLogistique.length === 1) {{
+        html += renderEventCard(pauseLogistique[0], false, isOverview);
+    }}
+
+    // Render parallel sessions
+    if (parallelSessions.length > 0) {{
+        html += `<div class="parallel-sessions">`;
+        parallelSessions.forEach(event => {{
+            html += renderEventCard(event, true, isOverview);
+        }});
+        html += `</div>`;
+    }}
+
+    return html;
+}}
+
+function escapeHtml(text) {{
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}}
+
+function renderEventCard(event, isSession = false, isOverview = false) {{
+    const hasDetails = event.description || event.speaker || (event.type === 'session') || event.abstract;
+    const clickable = hasDetails ? 'event-card--clickable' : '';
+    const eventJson = JSON.stringify(event).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+
+    let talksHtml = '';
+    // Only show talks list in detailed view, not in overview
+    if (event.type === 'session' && !isOverview) {{
+        const talks = getTalksForSession(event.id, event.date, event.start, event.end, event.salle);
+        if (talks.length > 0) {{
+            talksHtml = `
+                <div class="session-talks">
+                    ${{talks.map(talk => {{
+                        const talkJson = JSON.stringify(talk).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+                        return `
+                            <div class="talk-item">
+                                <div class="talk-item__time">${{talk.startTime}} - ${{talk.endTime}}</div>
+                                <div class="talk-item__title" data-event="${{talkJson}}">${{escapeHtml(talk.titre)}}</div>
+                                ${{talk.speaker ? `<div class="talk-item__speaker">${{escapeHtml(talk.speaker)}}</div>` : ''}}
+                            </div>
+                        `;
+                    }}).join('')}}
+                </div>
+            `;
+        }}
+    }}
+
+    // In overview mode, only show speaker for plenary sessions (discours)
+    const showSpeaker = event.speaker && (event.type === 'discours' || (!isOverview && event.type !== 'session'));
+
+    return `
+        <div class="event-card event-card--${{event.type}} ${{clickable}}"
+             ${{hasDetails ? `data-event="${{eventJson}}"` : ''}}>
+            <div class="event-card__inner">
+                <div class="event-card__header">
+                    <span class="event-card__badge event-card__badge--${{event.type}}">
+                        ${{CONFIG.typeLabels[event.type] || event.type}}
+                    </span>
+                    ${{event.roomDisplay ? `
+                        <span class="event-card__room event-card__room--${{event.room}}">
+                            ${{event.roomDisplay}}
+                        </span>
+                    ` : ''}}
+                </div>
+                <h3 class="event-card__title">${{escapeHtml(event.titre)}}</h3>
+                <div class="event-card__time">${{event.startTime}} - ${{event.endTime}}</div>
+                ${{showSpeaker ? `
+                    <div class="event-card__speaker">${{escapeHtml(event.speaker)}}</div>
+                ` : ''}}
+            </div>
+            ${{talksHtml}}
+        </div>
+    `;
+}}
+
+// ===== Modal =====
+function openModal(event) {{
+    const modal = document.getElementById('modal');
+    const body = modal.querySelector('.modal__body');
+
+    body.innerHTML = `
+        <span class="modal__badge event-card__badge--${{event.type}}">
+            ${{CONFIG.typeLabels[event.type] || event.type}}
+        </span>
+        <h2 class="modal__title">${{escapeHtml(event.titre)}}</h2>
+        <div class="modal__meta">
+            <div class="modal__meta-item">
+                <span class="modal__meta-icon">🕐</span>
+                <span>${{event.startTime}} - ${{event.endTime}}</span>
+            </div>
+            ${{event.roomDisplay ? `
+                <div class="modal__meta-item">
+                    <span class="modal__meta-icon">📍</span>
+                    <span>${{event.roomDisplay}}</span>
+                </div>
+            ` : ''}}
+            <div class="modal__meta-item">
+                <span class="modal__meta-icon">📅</span>
+                <span>${{formatDate(event.date)}}</span>
+            </div>
+        </div>
+        ${{event.speaker ? `
+            <div class="modal__section">
+                <h3 class="modal__section-title">Intervenant</h3>
+                <p class="modal__speaker">${{escapeHtml(event.speaker)}}</p>
+            </div>
+        ` : ''}}
+        ${{event.description ? `
+            <div class="modal__section">
+                <h3 class="modal__section-title">Description</h3>
+                <p class="modal__description">${{escapeHtml(event.description)}}</p>
+            </div>
+        ` : ''}}
+        ${{event.abstract ? `
+            <div class="modal__section">
+                <h3 class="modal__section-title">Abstract</h3>
+                <p class="modal__description">${{escapeHtml(event.abstract)}}</p>
+            </div>
+        ` : ''}}
+    `;
+
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+}}
+
+function closeModal() {{
+    const modal = document.getElementById('modal');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+}}
+
+// ===== Event Listeners =====
+function setupEventListeners() {{
+    const modal = document.getElementById('modal');
+
+    modal.querySelector('.modal__close').addEventListener('click', closeModal);
+    modal.querySelector('.modal__backdrop').addEventListener('click', closeModal);
+
+    document.addEventListener('keydown', (e) => {{
+        if (e.key === 'Escape') {{
+            closeModal();
+        }}
+    }});
+}}
+
+// ===== Initialization =====
+function init() {{
+    renderDayTabs();
+    renderRoomLegend();
+    renderSchedule();
+    setupEventListeners();
+}}
+
+document.addEventListener('DOMContentLoaded', init);
+'''
