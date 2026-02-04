@@ -30,11 +30,11 @@ cd dist && python3 -m http.server 8000
 2. **Processing**: `builder.py` parses CSV, merges abstracts by DOCID, structures data
 3. **Output**: Static HTML/CSS/JS with event data embedded as JSON in `app.js`
 
-### Module Structure
+### Module Structure (`sciencesconf2prog/`)
 
 - `cli.py` - argparse-based CLI, entry point via `sciencesconf2prog` command
-- `builder.py` - Core logic: CSV parsing, submissions loading, data processing, file generation
-- `templates.py` - Contains HTML template, CSS stylesheet, and JS code as Python strings with f-string interpolation for embedding data
+- `builder.py` - CSV parsing, submissions loading, data processing, file generation
+- `templates.py` - HTML template, CSS stylesheet, and JS code as Python strings with f-string interpolation for embedding data
 
 ### Event Types
 

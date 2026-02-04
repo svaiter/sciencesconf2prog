@@ -29,6 +29,3 @@ sciencesconf2prog = "sciencesconf2prog.cli:main"
 
 [project.optional-dependencies]
 dev = ["pytest", "black", "ruff"]
-
-[tool.setuptools.packages.find]
-where = ["src"]
