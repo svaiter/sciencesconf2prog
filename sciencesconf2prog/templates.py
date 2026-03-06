@@ -1103,8 +1103,8 @@ function renderEventCard(event, isSession = false, isOverview = false) {{
         }}
     }}
 
-    // In overview mode, only show speaker for plenary sessions (discours)
-    const showSpeaker = event.speaker && (event.type === 'discours' || (!isOverview && event.type !== 'session'));
+    // In overview mode, only show speaker for plenary sessions and session chairs
+    const showSpeaker = event.speaker && (event.type === 'discours' || event.type === 'session' || !isOverview);
 
     return `
         <div class="event-card event-card--${{event.type}} ${{clickable}}"
@@ -1123,7 +1123,7 @@ function renderEventCard(event, isSession = false, isOverview = false) {{
                 <h3 class="event-card__title">${{escapeHtml(event.titre)}}</h3>
                 <div class="event-card__time">${{event.startTime}} - ${{event.endTime}}</div>
                 ${{showSpeaker ? `
-                    <div class="event-card__speaker">${{escapeHtml(event.speaker)}}</div>
+                    <div class="event-card__speaker">${{event.type === 'session' ? 'Chair\u00a0: ' : ''}}${{escapeHtml(event.speaker)}}</div>
                 ` : ''}}
             </div>
             ${{talksHtml}}
@@ -1159,7 +1159,7 @@ function openModal(event) {{
         </div>
         ${{event.speaker ? `
             <div class="modal__section">
-                <h3 class="modal__section-title">Intervenant</h3>
+                <h3 class="modal__section-title">${{event.type === 'session' ? 'Chair' : 'Intervenant'}}</h3>
                 <p class="modal__speaker">${{escapeHtml(event.speaker)}}</p>
             </div>
         ` : ''}}
