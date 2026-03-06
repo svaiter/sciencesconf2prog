@@ -440,6 +440,12 @@ body {
     font-style: italic;
 }
 
+.event-card__chair {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-align: right;
+}
+
 .event-card__description {
     font-size: 0.875rem;
     color: var(--color-text-muted);
@@ -849,7 +855,7 @@ let state = {{
     days: DATA.days,
     rooms: new Set(DATA.rooms),
     currentDay: DATA.days[0],
-    isOverview: false
+    isOverview: true
 }};
 
 // ===== Data Processing =====
@@ -1123,10 +1129,10 @@ function renderEventCard(event, isSession = false, isOverview = false) {{
                 <h3 class="event-card__title">${{escapeHtml(event.titre)}}</h3>
                 <div class="event-card__time">${{event.startTime}} - ${{event.endTime}}</div>
                 ${{showSpeaker ? `
-                    <div class="event-card__speaker">${{event.type === 'session' ? 'Chair\u00a0: ' : ''}}${{escapeHtml(event.speaker)}}</div>
+                    <div class="${{event.type === 'session' ? 'event-card__chair' : 'event-card__speaker'}}">${{event.type === 'session' ? 'Chair\u00a0: ' : ''}}${{event.type === 'discours' ? '<strong>' : ''}}${{escapeHtml(event.speaker)}}${{event.type === 'discours' ? '</strong>' : ''}}</div>
                 ` : ''}}
                 ${{event.type === 'discours' && event.chair ? `
-                    <div class="event-card__speaker">Chair\u00a0: ${{escapeHtml(event.chair)}}</div>
+                    <div class="event-card__chair">Chair\u00a0: ${{escapeHtml(event.chair)}}</div>
                 ` : ''}}
             </div>
             ${{talksHtml}}
@@ -1163,7 +1169,7 @@ function openModal(event) {{
         ${{event.speaker ? `
             <div class="modal__section">
                 <h3 class="modal__section-title">${{event.type === 'session' ? 'Chair' : 'Intervenant'}}</h3>
-                <p class="modal__speaker">${{escapeHtml(event.speaker)}}</p>
+                <p class="modal__speaker">${{event.type === 'discours' ? '<strong>' + escapeHtml(event.speaker) + '</strong>' : escapeHtml(event.speaker)}}</p>
             </div>
         ` : ''}}
         ${{event.type === 'discours' && event.chair ? `
