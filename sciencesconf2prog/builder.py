@@ -109,6 +109,24 @@ def normalize_room(room: str) -> str:
     return "".join(c for c in normalized if unicodedata.category(c) != "Mn")
 
 
+def load_and_process(
+    csv_path: Path,
+    submissions_path: Path = None,
+    plenaries_path: Path = None,
+) -> dict:
+    """Load CSV and optional JSON files, return processed event data."""
+    if submissions_path is None:
+        submissions_path = csv_path.parent / "submissions.json"
+    submissions = load_submissions(submissions_path)
+
+    if plenaries_path is None:
+        plenaries_path = csv_path.parent / "plenaries.json"
+    plenaries = load_plenaries(plenaries_path)
+
+    raw_events = parse_csv(csv_path)
+    return process_events(raw_events, submissions, plenaries)
+
+
 def build_program(
     csv_path: Path,
     output_dir: Path,
@@ -118,22 +136,9 @@ def build_program(
     plenaries_path: Path = None,
 ) -> None:
     """Build the complete program from CSV to static files."""
-    # Create output directory
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Load submissions if path provided or look for default location
-    if submissions_path is None:
-        submissions_path = csv_path.parent / "submissions.json"
-    submissions = load_submissions(submissions_path)
-
-    # Load plenaries if path provided or look for default location
-    if plenaries_path is None:
-        plenaries_path = csv_path.parent / "plenaries.json"
-    plenaries = load_plenaries(plenaries_path)
-
-    # Parse and process CSV
-    raw_events = parse_csv(csv_path)
-    data = process_events(raw_events, submissions, plenaries)
+    data = load_and_process(csv_path, submissions_path, plenaries_path)
 
     # Generate files
     html_content = get_html_template(title, subtitle)

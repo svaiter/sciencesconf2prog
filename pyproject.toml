@@ -28,4 +28,5 @@ classifiers = [
 sciencesconf2prog = "sciencesconf2prog.cli:main"
 
 [project.optional-dependencies]
+pdf = ["fpdf2>=2.7"]
 dev = ["pytest", "black", "ruff"]
