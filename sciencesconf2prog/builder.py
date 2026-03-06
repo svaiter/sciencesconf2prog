@@ -110,7 +110,7 @@ def build_program(
 
     # Generate files
     html_content = get_html_template(title, subtitle)
-    css_content = get_css()
+    css_content = get_css(data["rooms"])
     js_content = get_js_template(data)
 
     # Write files

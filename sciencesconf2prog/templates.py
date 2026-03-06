@@ -1,6 +1,29 @@
 """HTML, CSS, and JS templates for the program."""
 
 import json
+import unicodedata
+
+# Palette of up to 10 visually distinct room colors
+ROOM_COLORS = [
+    "#ec4899",  # pink
+    "#8b5cf6",  # violet
+    "#06b6d4",  # cyan
+    "#f97316",  # orange
+    "#10b981",  # emerald
+    "#ef4444",  # red
+    "#3b82f6",  # blue
+    "#a855f7",  # purple
+    "#14b8a6",  # teal
+    "#eab308",  # yellow
+]
+
+
+def _normalize_room(room: str) -> str:
+    """Normalize room name for CSS class usage."""
+    if not room:
+        return ""
+    normalized = unicodedata.normalize("NFD", room.lower())
+    return "".join(c for c in normalized if unicodedata.category(c) != "Mn")
 
 
 def get_html_template(title: str, subtitle: str) -> str:
@@ -65,9 +88,23 @@ def get_html_template(title: str, subtitle: str) -> str:
 '''
 
 
-def get_css() -> str:
+def get_css(rooms: list[str] | None = None) -> str:
     """Return the CSS stylesheet."""
-    return '''/* ===== CSS Variables ===== */
+    if rooms is None:
+        rooms = []
+
+    # Build room color CSS variables and rules
+    room_color_vars = ""
+    room_legend_rules = ""
+    room_card_rules = ""
+    for i, room in enumerate(rooms):
+        normalized = _normalize_room(room)
+        color = ROOM_COLORS[i % len(ROOM_COLORS)]
+        room_color_vars += f"\n    --color-room-{normalized}: {color};"
+        room_legend_rules += f"\n.legend-dot--{normalized} {{ background-color: var(--color-room-{normalized}); }}"
+        room_card_rules += f"\n.event-card__room--{normalized}::before {{ background-color: var(--color-room-{normalized}); }}"
+
+    css = '''/* ===== CSS Variables ===== */
 :root {
     --color-primary: #2563eb;
     --color-primary-dark: #1d4ed8;
@@ -83,11 +120,7 @@ def get_css() -> str:
     --color-pause-light: #fef3c7;
     --color-logistique: #6b7280;
     --color-logistique-light: #f3f4f6;
-
-    --color-room-brea: #ec4899;
-    --color-room-cezanne: #8b5cf6;
-    --color-room-chagall: #06b6d4;
-
+/* __ROOM_COLOR_VARS__ */
     --color-bg: #f8fafc;
     --color-surface: #ffffff;
     --color-text: #1e293b;
@@ -255,10 +288,7 @@ body {
     height: 10px;
     border-radius: 50%;
 }
-
-.legend-dot--brea { background-color: var(--color-room-brea); }
-.legend-dot--cezanne { background-color: var(--color-room-cezanne); }
-.legend-dot--chagall { background-color: var(--color-room-chagall); }
+/* __ROOM_LEGEND_RULES__ */
 
 /* ===== Main Content ===== */
 .main {
@@ -388,10 +418,7 @@ body {
     height: 8px;
     border-radius: 50%;
 }
-
-.event-card__room--brea::before { background-color: var(--color-room-brea); }
-.event-card__room--cezanne::before { background-color: var(--color-room-cezanne); }
-.event-card__room--chagall::before { background-color: var(--color-room-chagall); }
+/* __ROOM_CARD_RULES__ */
 
 .event-card__title {
     font-size: 1rem;
@@ -788,6 +815,12 @@ body {
     }
 }
 '''
+
+    css = css.replace('/* __ROOM_COLOR_VARS__ */', room_color_vars)
+    css = css.replace('/* __ROOM_LEGEND_RULES__ */', room_legend_rules)
+    css = css.replace('/* __ROOM_CARD_RULES__ */', room_card_rules)
+
+    return css
 
 
 def get_js_template(data: dict) -> str:
