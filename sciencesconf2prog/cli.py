@@ -55,6 +55,12 @@ def main():
         default=None,
         help="Path to submissions.json file (default: submissions.json next to CSV)",
     )
+    build_parser.add_argument(
+        "--plenaries",
+        type=Path,
+        default=None,
+        help="Path to plenaries.json file (default: plenaries.json next to CSV)",
+    )
 
     args = parser.parse_args()
 
@@ -74,6 +80,7 @@ def main():
                 title=args.title,
                 subtitle=args.subtitle,
                 submissions_path=args.submissions,
+                plenaries_path=args.plenaries,
             )
             print(f"Program built successfully in {args.output}/")
         except Exception as e:

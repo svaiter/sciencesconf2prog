@@ -1077,7 +1077,7 @@ function escapeHtml(text) {{
 }}
 
 function renderEventCard(event, isSession = false, isOverview = false) {{
-    const hasDetails = event.description || event.speaker || (event.type === 'session') || event.abstract;
+    const hasDetails = event.description || event.speaker || (event.type === 'session') || event.abstract || event.chair;
     const clickable = hasDetails ? 'event-card--clickable' : '';
     const eventJson = JSON.stringify(event).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
 
@@ -1125,6 +1125,9 @@ function renderEventCard(event, isSession = false, isOverview = false) {{
                 ${{showSpeaker ? `
                     <div class="event-card__speaker">${{event.type === 'session' ? 'Chair\u00a0: ' : ''}}${{escapeHtml(event.speaker)}}</div>
                 ` : ''}}
+                ${{event.type === 'discours' && event.chair ? `
+                    <div class="event-card__speaker">Chair\u00a0: ${{escapeHtml(event.chair)}}</div>
+                ` : ''}}
             </div>
             ${{talksHtml}}
         </div>
@@ -1161,6 +1164,12 @@ function openModal(event) {{
             <div class="modal__section">
                 <h3 class="modal__section-title">${{event.type === 'session' ? 'Chair' : 'Intervenant'}}</h3>
                 <p class="modal__speaker">${{escapeHtml(event.speaker)}}</p>
+            </div>
+        ` : ''}}
+        ${{event.type === 'discours' && event.chair ? `
+            <div class="modal__section">
+                <h3 class="modal__section-title">Chair</h3>
+                <p class="modal__speaker">${{escapeHtml(event.chair)}}</p>
             </div>
         ` : ''}}
         ${{event.description ? `

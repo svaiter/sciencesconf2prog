@@ -30,10 +30,23 @@ def load_submissions(submissions_path: Path) -> dict[str, dict]:
     return {s["DOCID"]: s for s in submissions if s.get("DOCID")}
 
 
-def process_events(raw_events: list[dict], submissions: dict[str, dict] = None) -> dict:
+def load_plenaries(plenaries_path: Path) -> dict[str, dict]:
+    """Load plenaries.json and return a dict indexed by id."""
+    if not plenaries_path.exists():
+        return {}
+
+    with open(plenaries_path, "r", encoding="utf-8") as f:
+        plenaries = json.load(f)
+
+    return {p["id"]: p for p in plenaries if p.get("id")}
+
+
+def process_events(raw_events: list[dict], submissions: dict[str, dict] = None, plenaries: dict[str, dict] = None) -> dict:
     """Process raw events into structured data for the frontend."""
     if submissions is None:
         submissions = {}
+    if plenaries is None:
+        plenaries = {}
 
     events = []
     days = set()
@@ -63,6 +76,14 @@ def process_events(raw_events: list[dict], submissions: dict[str, dict] = None) 
             "docid": docid,
             "abstract": submission.get("ABSTRACT", ""),
         }
+
+        # Merge plenary data (chair, abstract) by event id
+        plenary = plenaries.get(event["id"], {})
+        if plenary:
+            if plenary.get("chair"):
+                event["chair"] = plenary["chair"]
+            if plenary.get("abstract") and not event["abstract"]:
+                event["abstract"] = plenary["abstract"]
 
         events.append(event)
         days.add(event["date"])
@@ -94,6 +115,7 @@ def build_program(
     title: str = "Programme",
     subtitle: str = "Conférence 2026",
     submissions_path: Path = None,
+    plenaries_path: Path = None,
 ) -> None:
     """Build the complete program from CSV to static files."""
     # Create output directory
@@ -104,9 +126,14 @@ def build_program(
         submissions_path = csv_path.parent / "submissions.json"
     submissions = load_submissions(submissions_path)
 
+    # Load plenaries if path provided or look for default location
+    if plenaries_path is None:
+        plenaries_path = csv_path.parent / "plenaries.json"
+    plenaries = load_plenaries(plenaries_path)
+
     # Parse and process CSV
     raw_events = parse_csv(csv_path)
-    data = process_events(raw_events, submissions)
+    data = process_events(raw_events, submissions, plenaries)
 
     # Generate files
     html_content = get_html_template(title, subtitle)
